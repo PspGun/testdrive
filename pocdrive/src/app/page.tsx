@@ -6,12 +6,13 @@ require( 'dotenv' ).config()
 
 export default function Home ()
 {
-
+  //set states
   const [ uploading, setUploading ] = useState( false );
   const [ selectImage, setselectImage ] = useState( "" );
   const [ selectFile, setselectFile ] = useState<File>();
 
-  const handleUpload = async () =>
+  // function upload image call backend
+  const handleUpload = async () => 
   {
     setUploading( true );
     try

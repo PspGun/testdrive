@@ -3,7 +3,7 @@ const uuidv4 = require("uuid").v4;
 const express = require("express");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-
+//function
 let filename = uuidv4() + "-" + new Date().getTime();
 const upload = multer({
   storage: multer.diskStorage({
@@ -24,6 +24,8 @@ const getFileName = (file) => {
 
 const apiRoute = express();
 
+
+//rounter
 apiRoute.post("/upload", upload.array("file"), async (req, res) => {
   // attribute name you are sending the file by
   try {
@@ -39,8 +41,3 @@ apiRoute.post("/upload", upload.array("file"), async (req, res) => {
 
 module.exports = apiRoute;
 
-// export const config = {
-//     api: {
-//         bodyParser: false, // Disallow body parsing, consume as stream
-//     },
-// };
