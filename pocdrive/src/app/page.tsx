@@ -2,9 +2,11 @@
 
 import React, { useState } from "react";
 import axios from "axios";
+require( 'dotenv' ).config()
 
 export default function Home ()
 {
+
   const [ uploading, setUploading ] = useState( false );
   const [ selectImage, setselectImage ] = useState( "" );
   const [ selectFile, setselectFile ] = useState<File>();
@@ -16,9 +18,9 @@ export default function Home ()
     {
       if ( !selectFile ) return;
       const formData = new FormData();
-      formData.append( "myImage", selectFile );
-      // const { data } = await axios.post( "/api/image", formData );
-      // console.log( data );
+      formData.append( "file", selectFile );
+      const { data } = await axios.post( 'http://localhost:8000/api/upload', formData );
+      console.log( data );
     } catch ( error: any )
     {
       console.log( error.response?.data );
