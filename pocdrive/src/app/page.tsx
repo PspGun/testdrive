@@ -1,20 +1,24 @@
 'use client'
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import ReactCrop, { Crop } from 'react-image-crop';
+import ReactCrop, { Crop, PixelCrop, convertToPixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import resizeImage from "./resize";
 import { log } from "console";
+import { canvasPreview } from "./preview";
 // import resizeImage from "./resize";
 require( 'dotenv' ).config()
 
 export default function Home ()
 {
   //set states
+  const previewCanvasRef = useRef<HTMLCanvasElement>( null )
+  const imgRef = useRef<HTMLImageElement>( null )
   const [ uploading, setUploading ] = useState( false );
   const [ selectImage, setselectImage ] = useState( "" );
   const [ selectFile, setselectFile ] = useState<File>();
-  const [ crop, setCrop ] = useState<Crop>( { unit: 'px', width: 500, height: 500, x: 10, y: 10 } );
-
+  const [ completedCrop, setCompletedCrop ] = useState<PixelCrop>()
+  const [ crop, setCrop ] = useState<Crop>( { unit: 'px', width: 500, height: 500, x: 25, y: 25 } );
+  const [ aspect, setAspect ] = useState<number | undefined>( 16 / 9 )
 
   const handleFileChange = async ( event: React.ChangeEvent<HTMLInputElement> ) =>
   {
@@ -29,19 +33,86 @@ export default function Home ()
     }
   };
 
+  useEffect(
+    () =>
+    {
+      console.log( completedCrop?.width, completedCrop?.height );
+      console.log( imgRef.current );
+      console.log( previewCanvasRef.current );
+
+      if (
+        completedCrop?.width &&
+        completedCrop?.height &&
+        imgRef.current &&
+        previewCanvasRef.current
+      )
+      {
+        // We use canvasPreview as it's much faster than imgPreview.
+        canvasPreview(
+          imgRef.current,
+          previewCanvasRef.current,
+          completedCrop,
+          1,
+          0,
+        )
+      }
+
+    },
+    [ completedCrop, 1, 0 ],
+  )
+  function centerAspectCrop (
+    mediaWidth: number,
+    mediaHeight: number,
+    aspect: number,
+  )
+  {
+    return centerCrop(
+      makeAspectCrop(
+        {
+          unit: '%',
+          width: 90,
+        },
+        aspect,
+        mediaWidth,
+        mediaHeight,
+      ),
+      mediaWidth,
+      mediaHeight,
+    )
+  }
+  function handleToggleAspectClick ()
+  {
+    if ( aspect )
+    {
+      setAspect( undefined )
+    } else if ( imgRef.current )
+    {
+      const { width, height } = imgRef.current
+      setAspect( 16 / 9 )
+      const newCrop = centerAspectCrop( width, height, 16 / 9 )
+      setCrop( newCrop )
+      // Updates the preview
+      setCompletedCrop( convertToPixelCrop( newCrop, width, height ) )
+    }
+  }
+
   const handleCropComplete = async ( croppedArea: Crop, croppedAreaPixels: Crop ) =>
   {
     if ( selectFile )
     {
 
-
       // Crop and resize the image based on the selected area
-      const resizedBlob = await resizeImage( selectFile, 500, 500, croppedArea );
+      const resizedBlob = await resizeImage( selectFile, 500, 500, crop );
+      setCrop( { unit: 'px', width: 500, height: 500, x: 25, y: 25 } );
       setselectImage( URL.createObjectURL( resizedBlob ) );
       setselectFile( new File( [ resizedBlob ], selectFile.name, { type: selectFile.type } ) );
     }
   };
 
+  // useEffect( () =>
+  // {
+  //   console.log( crop )
+  // }, [ crop ] )
 
 
 
@@ -80,21 +151,35 @@ export default function Home ()
           multiple accept="image/*"
           onChange={ handleFileChange }
         />
-        <div className="topbar w-40 aspect-video rounded flex items-center justify-center border-2 border-dashed cursor-pointer">
+        <div className="topbar aspect-video rounded flex items-center justify-center border-2 border-dashed cursor-pointer">
           { selectImage ? (
             <ReactCrop
-
               crop={ crop }
               onChange={ ( newCrop ) => setCrop( newCrop ) }
-              onComplete={ handleCropComplete }
+              onComplete={ ( c ) => setCompletedCrop( c ) }
             >
-              <img src={ selectImage } alt="" />
+              <img ref={ imgRef } src={ selectImage } alt="" />
             </ReactCrop>
           ) : (
             <span>Select Image</span>
           ) }
         </div>
 
+        { !!completedCrop && (
+          <>
+            <div>
+              <canvas
+                ref={ previewCanvasRef }
+                style={ {
+                  border: '1px solid black',
+                  objectFit: 'contain',
+                  width: completedCrop.width,
+                  height: completedCrop.height,
+                } }
+              />
+            </div>
+          </>
+        ) }
         <button
           onClick={ handleUpload }
           disabled={ uploading }
@@ -103,8 +188,8 @@ export default function Home ()
         >
           { uploading ? "Uploading.." : "Upload" }
         </button>
-        <button >Select File</button>
       </div>
+
     </main >
   )
 }
