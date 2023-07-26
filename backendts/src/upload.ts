@@ -1,5 +1,5 @@
 import multer from "multer";
-import uuidv4 from "uuid";
+import { v4 as uuidv4 } from "uuid";
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
@@ -12,7 +12,7 @@ const upload = multer({
   }),
 });
 
-const getFileName = (file) => {
+const getFileName = (file: Express.Multer.File) => {
   filename +=
     "." +
     file.originalname.substring(
@@ -35,11 +35,9 @@ export default apiRoute.post(
       await prisma.image.create({ data: { path } });
       console.log("แตก");
       res.status(200).json({ data: `${path}` });
-    } catch (error) {
-      console.log(error.message);
-      res
-        .status(500)
-        .json({ error: `Sorry something Happened! ${error.message}` });
+    } catch (err) {
+      // console.log(error.message);
+      res.status(500).json({ err: `Sorry something Happened! ${err}` });
     }
   }
 );
