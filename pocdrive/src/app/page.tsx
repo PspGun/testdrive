@@ -12,7 +12,7 @@ export default function Home ()
   const [ uploading, setUploading ] = useState( false );
   const [ selectImage, setselectImage ] = useState( "" );
   const [ selectFile, setselectFile ] = useState<File>();
-  const [ crop, setCrop ] = useState<Crop>( { unit: 'px', width: 100, x: 25, y: 25, height: 100 } );
+  const [ crop, setCrop ] = useState<Crop>( { unit: 'px', width: 500, height: 500, x: 10, y: 10 } );
 
 
   const handleFileChange = async ( event: React.ChangeEvent<HTMLInputElement> ) =>
@@ -21,7 +21,7 @@ export default function Home ()
     if ( target.files && target.files.length > 0 )
     {
       const file = target.files[ 0 ];
-      console.log( "1" );
+
       // Set the selected file for cropping
       setselectFile( file );
       setselectImage( URL.createObjectURL( file ) );
@@ -32,8 +32,6 @@ export default function Home ()
   {
     if ( selectFile )
     {
-      console.log( "2" );
-
       // Crop and resize the image based on the selected area
       const resizedBlob = await resizeImage( selectFile, 500, 500, croppedAreaPixels );
       setselectImage( URL.createObjectURL( resizedBlob ) );
@@ -79,15 +77,16 @@ export default function Home ()
           multiple accept="image/*"
           onChange={ handleFileChange }
         />
-
-        <ReactCrop
-          crop={ crop }
-          onChange={ ( newCrop ) => setCrop( newCrop ) }
-          onComplete={ handleCropComplete }
-        />
         <div className="topbar w-40 aspect-video rounded flex items-center justify-center border-2 border-dashed cursor-pointer">
           { selectImage ? (
-            <img src={ selectImage } alt="" />
+            <ReactCrop
+
+              crop={ crop }
+              onChange={ ( newCrop ) => setCrop( newCrop ) }
+              onComplete={ handleCropComplete }
+            >
+              <img src={ selectImage } alt="" />
+            </ReactCrop>
           ) : (
             <span>Select Image</span>
           ) }

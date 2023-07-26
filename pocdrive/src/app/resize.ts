@@ -51,7 +51,7 @@ async function resizeImage(
 
         const resizedCtx = resizedCanvas.getContext("2d");
         resizedCtx?.drawImage(
-          canvas,
+          img,
           0,
           0,
           crop.width!,
