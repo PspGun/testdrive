@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import ReactCrop, { Crop } from 'react-image-crop';
 import resizeImage from "./resize";
+import { log } from "console";
 // import resizeImage from "./resize";
 require( 'dotenv' ).config()
 
@@ -32,8 +33,10 @@ export default function Home ()
   {
     if ( selectFile )
     {
+
+
       // Crop and resize the image based on the selected area
-      const resizedBlob = await resizeImage( selectFile, 500, 500, croppedAreaPixels );
+      const resizedBlob = await resizeImage( selectFile, 500, 500, croppedArea );
       setselectImage( URL.createObjectURL( resizedBlob ) );
       setselectFile( new File( [ resizedBlob ], selectFile.name, { type: selectFile.type } ) );
     }

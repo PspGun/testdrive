@@ -16,24 +16,12 @@ async function resizeImage(
         const canvas = document.createElement("canvas");
         canvas.width = crop.width!;
         canvas.height = crop.height!;
-
         const ctx = canvas.getContext("2d");
-        ctx?.drawImage(
-          img,
-          crop.x!,
-          crop.y!,
-          crop.width!,
-          crop.height!,
-          0,
-          0,
-          crop.width!,
-          crop.height!
-        );
+        ctx?.drawImage(img, 0, 0, crop.width!, crop.height!);
 
         const resizedCanvas = document.createElement("canvas");
         let width = crop.width!;
         let height = crop.height!;
-
         if (width > height) {
           if (width > maxWidth) {
             height = (height * maxWidth) / width;
@@ -48,19 +36,10 @@ async function resizeImage(
 
         resizedCanvas.width = width;
         resizedCanvas.height = height;
-
         const resizedCtx = resizedCanvas.getContext("2d");
-        resizedCtx?.drawImage(
-          img,
-          0,
-          0,
-          crop.width!,
-          crop.height!,
-          0,
-          0,
-          width,
-          height
-        );
+        resizedCtx?.drawImage(canvas, 0, 0, width, height);
+        console.log(width);
+        console.log(height);
 
         resizedCanvas.toBlob((blob) => {
           resolve(blob as Blob);
