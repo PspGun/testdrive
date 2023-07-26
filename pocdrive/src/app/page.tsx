@@ -5,6 +5,9 @@ import ReactCrop, { Crop, PixelCrop, convertToPixelCrop, centerCrop, makeAspectC
 import resizeImage from "./resize";
 import { log } from "console";
 import { canvasPreview } from "./preview";
+import blobToFile from "./dataURItoBlob";
+import dataURItoBlob from "./dataURItoBlob";
+
 // import resizeImage from "./resize";
 require( 'dotenv' ).config()
 
@@ -80,21 +83,6 @@ export default function Home ()
       mediaHeight,
     )
   }
-  function handleToggleAspectClick ()
-  {
-    if ( aspect )
-    {
-      setAspect( undefined )
-    } else if ( imgRef.current )
-    {
-      const { width, height } = imgRef.current
-      setAspect( 16 / 9 )
-      const newCrop = centerAspectCrop( width, height, 16 / 9 )
-      setCrop( newCrop )
-      // Updates the preview
-      setCompletedCrop( convertToPixelCrop( newCrop, width, height ) )
-    }
-  }
 
   const handleCropComplete = async ( croppedArea: Crop, croppedAreaPixels: Crop ) =>
   {
@@ -123,8 +111,13 @@ export default function Home ()
     try
     {
       if ( !selectFile ) return;
+      if ( !previewCanvasRef.current ) return;
+      var dataURL = previewCanvasRef.current.toDataURL( 'image/jpeg', 0.5 );
+      var blob = dataURItoBlob( dataURL );
+      // var blob = blobToFile( dataURL, "watdee.jpeg" );
+      const pic = URL.createObjectURL( blob );
       const formData = new FormData();
-      formData.append( "file", selectFile );
+      formData.append( "file", pic );
       const { data } = await axios.post( 'http://localhost:8000/api/upload', formData );
       console.log( data );
     } catch ( error: any )
