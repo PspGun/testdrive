@@ -1,7 +1,9 @@
 'use client'
-
 import React, { useState } from "react";
 import axios from "axios";
+import ReactCrop, { Crop } from 'react-image-crop';
+import resizeImage from "./resize";
+// import resizeImage from "./resize";
 require( 'dotenv' ).config()
 
 export default function Home ()
@@ -10,6 +12,37 @@ export default function Home ()
   const [ uploading, setUploading ] = useState( false );
   const [ selectImage, setselectImage ] = useState( "" );
   const [ selectFile, setselectFile ] = useState<File>();
+  const [ crop, setCrop ] = useState<Crop>( { unit: 'px', width: 100, x: 25, y: 25, height: 100 } );
+
+
+  const handleFileChange = async ( event: React.ChangeEvent<HTMLInputElement> ) =>
+  {
+    const target = event.target as HTMLInputElement;
+    if ( target.files && target.files.length > 0 )
+    {
+      const file = target.files[ 0 ];
+      console.log( "1" );
+      // Set the selected file for cropping
+      setselectFile( file );
+      setselectImage( URL.createObjectURL( file ) );
+    }
+  };
+
+  const handleCropComplete = async ( croppedArea: Crop, croppedAreaPixels: Crop ) =>
+  {
+    if ( selectFile )
+    {
+      console.log( "2" );
+
+      // Crop and resize the image based on the selected area
+      const resizedBlob = await resizeImage( selectFile, 500, 500, croppedAreaPixels );
+      setselectImage( URL.createObjectURL( resizedBlob ) );
+      setselectFile( new File( [ resizedBlob ], selectFile.name, { type: selectFile.type } ) );
+    }
+  };
+
+
+
 
   // function upload image call backend
   const handleUpload = async () => 
@@ -28,6 +61,11 @@ export default function Home ()
     }
     setUploading( false );
   };
+  function dataURLToBlob ( dataUrl: string )
+  {
+    throw new Error( "Function not implemented." );
+  }
+
   return (
     <main className="flex min-h-screen flex-col items-center p-24">
       <div className="z-10 w-full max-w-5xl items-center  font-mono text-sm lg:flex">
@@ -35,20 +73,19 @@ export default function Home ()
           Get started by editing&nbsp;
           <code className="font-mono font-bold">src/app/page.tsx</code>
         </p> */}
+
         <input
           type="file"
           multiple accept="image/*"
-          onChange={ ( { target } ) =>
-          {
-            if ( target.files )
-            {
-              const file = target.files[ 0 ];
-              setselectImage( URL.createObjectURL( file ) );
-              setselectFile( file );
-            }
-          } }
+          onChange={ handleFileChange }
         />
-        <div className="w-40 aspect-video rounded flex items-center justify-center border-2 border-dashed cursor-pointer">
+
+        <ReactCrop
+          crop={ crop }
+          onChange={ ( newCrop ) => setCrop( newCrop ) }
+          onComplete={ handleCropComplete }
+        />
+        <div className="topbar w-40 aspect-video rounded flex items-center justify-center border-2 border-dashed cursor-pointer">
           { selectImage ? (
             <img src={ selectImage } alt="" />
           ) : (
@@ -69,3 +106,4 @@ export default function Home ()
     </main >
   )
 }
+
