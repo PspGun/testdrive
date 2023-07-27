@@ -61,15 +61,13 @@ export default function Home() {
   const handleUpload = async () => {
     setUploading(true);
     try {
-      if (!selectFile) return;
       if (!previewCanvasRef.current) return;
+      //convert file type state
       var dataURL = previewCanvasRef.current.toDataURL("image/jpeg", 0.5);
-      console.log(dataURL);
       var blob = dataURItoBlob(dataURL);
-      console.log(blob);
       const jpegFile = blobToJPEG(blob, "my_image.jpg");
+      //upload picture state
       const formData = new FormData();
-      console.log(jpegFile);
       formData.append("file", jpegFile);
       const { data } = await axios.post(
         "http://localhost:8000/api/upload",
