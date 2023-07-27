@@ -1,14 +1,10 @@
 'use client'
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import ReactCrop, { Crop, PixelCrop, convertToPixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
-import resizeImage from "./resize";
-import { log } from "console";
+import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
 import { canvasPreview } from "./preview";
-import blobToFile from "./dataURItoBlob";
 import dataURItoBlob from "./dataURItoBlob";
-
-// import resizeImage from "./resize";
+import blobToJPEG from "./blobtojpeg";
 require( 'dotenv' ).config()
 
 export default function Home ()
@@ -21,7 +17,6 @@ export default function Home ()
   const [ selectFile, setselectFile ] = useState<File>();
   const [ completedCrop, setCompletedCrop ] = useState<PixelCrop>()
   const [ crop, setCrop ] = useState<Crop>( { unit: 'px', width: 500, height: 500, x: 25, y: 25 } );
-  const [ aspect, setAspect ] = useState<number | undefined>( 16 / 9 )
 
   const handleFileChange = async ( event: React.ChangeEvent<HTMLInputElement> ) =>
   {
@@ -63,45 +58,10 @@ export default function Home ()
     },
     [ completedCrop, 1, 0 ],
   )
-  function centerAspectCrop (
-    mediaWidth: number,
-    mediaHeight: number,
-    aspect: number,
-  )
-  {
-    return centerCrop(
-      makeAspectCrop(
-        {
-          unit: '%',
-          width: 90,
-        },
-        aspect,
-        mediaWidth,
-        mediaHeight,
-      ),
-      mediaWidth,
-      mediaHeight,
-    )
-  }
-
-  const handleCropComplete = async ( croppedArea: Crop, croppedAreaPixels: Crop ) =>
-  {
-    if ( selectFile )
-    {
-
-      // Crop and resize the image based on the selected area
-      const resizedBlob = await resizeImage( selectFile, 500, 500, crop );
-      setCrop( { unit: 'px', width: 500, height: 500, x: 25, y: 25 } );
-      setselectImage( URL.createObjectURL( resizedBlob ) );
-      setselectFile( new File( [ resizedBlob ], selectFile.name, { type: selectFile.type } ) );
-    }
-  };
-
   // useEffect( () =>
   // {
   //   console.log( crop )
   // }, [ crop ] )
-
 
 
   // function upload image call backend
@@ -113,11 +73,13 @@ export default function Home ()
       if ( !selectFile ) return;
       if ( !previewCanvasRef.current ) return;
       var dataURL = previewCanvasRef.current.toDataURL( 'image/jpeg', 0.5 );
+      console.log( dataURL );
       var blob = dataURItoBlob( dataURL );
-      // var blob = blobToFile( dataURL, "watdee.jpeg" );
-      const pic = URL.createObjectURL( blob );
+      console.log( blob );
+      const jpegFile = blobToJPEG( blob, 'my_image.jpg' );
       const formData = new FormData();
-      formData.append( "file", pic );
+      console.log( jpegFile );
+      formData.append( "file", jpegFile );
       const { data } = await axios.post( 'http://localhost:8000/api/upload', formData );
       console.log( data );
     } catch ( error: any )
@@ -126,11 +88,6 @@ export default function Home ()
     }
     setUploading( false );
   };
-  function dataURLToBlob ( dataUrl: string )
-  {
-    throw new Error( "Function not implemented." );
-  }
-
   return (
     <main className="flex min-h-screen flex-col items-center p-24">
       <div className="z-10 w-full max-w-5xl items-center  font-mono text-sm lg:flex">

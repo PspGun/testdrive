@@ -16,14 +16,4 @@ function dataURItoBlob(dataURI: string) {
   return new Blob([ia], { type: mimeString });
 }
 
-function blobToFile(dataURI: string, fileName: string): File {
-  var theBlob = dataURItoBlob(dataURI);
-  const b: any = theBlob;
-  //A Blob() is almost a File() - it's just missing the two properties below which we will add
-  b.lastModifiedDate = new Date();
-  b.name = fileName;
-
-  //Cast to a File() type
-  return theBlob as File;
-}
 export default dataURItoBlob;

@@ -19,6 +19,7 @@ const getFileName = (file: Express.Multer.File) => {
       file.originalname.lastIndexOf(".") + 1,
       file.originalname.length
     );
+
   return filename;
 };
 
@@ -32,6 +33,7 @@ export default apiRoute.post(
     // attribute name you are sending the file by
     try {
       let path = `/images/${filename}`;
+
       await prisma.image.create({ data: { path } });
       console.log("แตก");
       res.status(200).json({ data: `${path}` });

@@ -1,6 +1,6 @@
 import ReactCrop, { Crop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
-
+//ไม่ใช้แล้ว
 async function resizeImage(
   file: File,
   maxWidth: number,
